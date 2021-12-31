@@ -1,32 +1,34 @@
-# NEW MODULE - SQL BEST PRACTICES
+# Mod-Phase-Aura - SQL QUERY
+## Query For Script Functionality.
 
-## Create a new table
-
-**Example:**
-```
-CREATE TABLE IF NOT EXISTS `table`(
-  `id` int(11) unsigned NOT NULL,
-  `column` smallint(6) unsigned,
-  `active` BOOLEAN DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-```
-
-**Boolean datatype in mysql:**
-Use `TinyInt(1)` or `Boolean` (this is the same thing)
-
-`bit(1)` can also work, but it may require a syntax like `b'(0)` and `b'(1)` when inserting (not sure).
-
-If there are multiple booleans in the same table, bit(1) is better, otherwise it's the same result.
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
-## Rules
+-- Dumping database structure for _acore_world
+CREATE DATABASE IF NOT EXISTS `_acore_world` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+USE `_acore_world`;
 
-- Use `InnoDB` as engine for dynamic tables (most likely in the `auth` and `characters` databases).
-- Use `MyISAM` for **read-only** tables (in `world` database), but if you're not sure, just use innoDB.
-- Use `utf8` as charset.
+-- Dumping structure for table _acore_world.cast_spell_on_player_for_mapid_in_phaseid
+CREATE TABLE IF NOT EXISTS `cast_spell_on_player_for_mapid_in_phaseid` (
+  `phaseId` int(10) unsigned DEFAULT NULL,
+  `spellId` int(10) unsigned DEFAULT NULL,
+  `mapId` smallint(5) unsigned DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Storm, your Mythic+ system addition. :)';
 
+-- Dumping data for table _acore_world.cast_spell_on_player_for_mapid_in_phaseid: ~1 rows (approximately)
+DELETE FROM `cast_spell_on_player_for_mapid_in_phaseid`;
+/*!40000 ALTER TABLE `cast_spell_on_player_for_mapid_in_phaseid` DISABLE KEYS */;
+INSERT INTO `cast_spell_on_player_for_mapid_in_phaseid` (`phaseId`, `spellId`, `mapId`) VALUES
+	(1, 48066, 576);
+/*!40000 ALTER TABLE `cast_spell_on_player_for_mapid_in_phaseid` ENABLE KEYS */;
 
-## Resources
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
 
-https://www.w3schools.com/sql/sql_datatypes.asp
