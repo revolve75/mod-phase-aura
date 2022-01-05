@@ -1,9 +1,37 @@
-
 #include "DatabaseEnv.h"
 #include "ScriptMgr.h"
 #include "Player.h"
 
-uint32 SPELL = 0;
+class PhasingSystem
+{
+private:
+    PhasingSystem() = default;
+public:
+    PhasingSystem(PhasingSystem&&) = delete;
+    PhasingSystem(const PhasingSystem&) = delete;
+
+    static PhasingSystem* instance()
+    {
+        static PhasingSystem instance;
+        return &instance;   
+    }
+    std::map<std::pair<uint32, uint32>, uint32> SpellPhaseContainer;
+    void LoadPhasingSystem();
+};
+
+#define sPhasingSystem PhasingSystem::instance()
+
+void PhasingSystem::LoadPhasingSystem()
+{
+    auto result = WorldDatabase.Query("SELECT `phaseId`, `mapId`, `spellId` FROM `cast_spell_on_player_for_mapid_in_phaseid`");
+    if (!result)
+        return;
+    do
+    {
+        auto data = result->Fetch();
+        sPhasingSystem->SpellPhaseContainer.insert({ std::make_pair(data[0].GetUInt32(), data[1].GetUInt32()), data[2].GetUInt32() });
+    } while (result->NextRow());
+}
 
 class cast_spell_on_player_for_mapid_in_phaseid : public PlayerScript
 {
@@ -12,37 +40,28 @@ public:
 
     void OnMapChanged(Player* player)
     {
-        QueryResult result = WorldDatabase.PQuery("SELECT `phaseId`, `spellId` FROM `cast_spell_on_player_for_mapid_in_phaseid` WHERE `mapId` = %u", player->GetMapId());
-        if (result)
+        auto phaseMapPair = std::make_pair(player->GetPhaseMask(), player->GetMapId());
+        if (sPhasingSystem->SpellPhaseContainer.find(phaseMapPair) != sPhasingSystem->SpellPhaseContainer.end())
         {
-            Field* fields  = result->Fetch();
-            uint32 phaseId = fields[0].GetUInt32();
-            int32  spellId = fields[1].GetUInt32();
-            
-            if (player->GetPhaseMask() == phaseId)
+            auto spellId = sPhasingSystem->SpellPhaseContainer[phaseMapPair];
             player->CastSpell(player, spellId, true);
-            /*
-            if (player->GetMapId() == map && player->GetPhaseMask() == phaseId)
-                player->CastSpell(player, spellId, true);
-            */
-            SPELL = spellId;
-
-          
         }
-        else
-        {
-            if (SPELL > 0)
-            {
-                player->RemoveAurasDueToSpell(SPELL);
-                SPELL = 0;
-            }
-        }
-        
     }
+};
 
+class ws_phasing_system_loader : WorldScript
+{
+public:
+    ws_phasing_system_loader() : WorldScript("ws_phasing_system_loader") {}
+
+    void OnAfterConfigLoad(bool /*reload*/) override
+    {
+        sPhasingSystem->LoadPhasingSystem();
+    }
 };
 
 void AddPhase_AuraScripts()
 {
     new cast_spell_on_player_for_mapid_in_phaseid();
+    new ws_phasing_system_loader();
 }
